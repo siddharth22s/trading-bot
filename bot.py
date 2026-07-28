@@ -1,18 +1,31 @@
+import os
 from flask import Flask, request
 import requests
 
 app = Flask(__name__)
 
-# Aapka Telegram Bot Token aur Chat ID
-TELEGRAM_BOT_TOKEN = "8544853109:AAF12GfyXNjChOk6FxxmHzRicGjVwq1MUfE"
-TELEGRAM_CHAT_ID = "1900882734"
+# Render Environment Variables se Token aur Chat ID secure tarike se load hoge
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
 
 def send_telegram_message(message):
+    # Agar environment variable set nahi hue toh error print karega
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        print(
+            "Error: TELEGRAM_BOT_TOKEN ya TELEGRAM_CHAT_ID set nahi hai Environment me!"
+        )
+        return
+
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "HTML"}
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML",
+    }
     try:
-        requests.post(url, json=payload)
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
     except Exception as e:
         print(f"Error sending message: {e}")
 
